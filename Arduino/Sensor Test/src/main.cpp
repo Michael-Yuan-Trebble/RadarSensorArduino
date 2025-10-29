@@ -15,6 +15,8 @@ int buttonState = 0;
 long duration;
 float distanceCm;
 
+long lastTime = 0;
+
 Servo scanner;
 
 void setup() 
@@ -24,6 +26,7 @@ void setup()
   pinMode(echoPin, INPUT);
   scanner.attach(6); 
   scanner.write(0);
+  lastTime = micros();
 }
 
 float getDistance() 
@@ -45,10 +48,16 @@ void loop()
   xValue = analogRead(A0);
   angle = map(xValue, 0, 1023,0,180);
   scanner.write(angle);
-  delay(15);
+  delay(60);
 
   float distance = getDistance();
+  lastTime = (micros() - lastTime);
+  
   Serial.print(millis()/1000);
   Serial.print(",");
-  Serial.println(distance);
+  Serial.print(lastTime);
+  Serial.print(",");
+  Serial.print(distance);
+  Serial.print(",");
+  Serial.println(angle);
 }
