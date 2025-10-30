@@ -1,7 +1,7 @@
 #include "Analyzer.h"
 
 struct DataPoint{
-    int timeMs;
+    float timeMs;
     float dt;
     float distanceCm;
     int angle;
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
         if(!std::getline(ss,angle,',')) continue;
 
         DataPoint dp;
-        dp.timeMs = std::stoi(timeStr);
+        dp.timeMs = std::stof(timeStr);
         dp.dt = std::stoi(dt) * 1e-6f;
         dp.distanceCm = std::stof(distStr);
         dp.angle = std::stoi(angle);

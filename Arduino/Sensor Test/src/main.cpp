@@ -53,11 +53,11 @@ void loop()
   float distance = getDistance();
   lastTime = (micros() - lastTime);
   
-  Serial.print(millis()/1000);
+  Serial.print(millis()/1000.0,2);
   Serial.print(",");
   Serial.print(lastTime);
   Serial.print(",");
-  Serial.print(distance);
+  Serial.print(distance,2);
   Serial.print(",");
   Serial.println(angle);
 }

@@ -28,9 +28,6 @@ class Graph(QWidget):
 
         self.ax = self.figure.add_subplot(111)
         self.ax.set_title("No Plot Selected")
-        self.ax.set_xlabel("Time (s)")
-        self.ax.set_ylabel("Distance (cm)")
-        self.ax.set_ylim(0,100)
 
         self.stylePlot()
 
@@ -46,16 +43,17 @@ class Graph(QWidget):
         self.loadFiles()
 
     def stylePlot(self):
+        self.ax.set_xlabel("Time (s)")
+        self.ax.set_ylabel("Distance (cm)")
+        self.ax.set_ylim(0,100)
         self.figure.set_facecolor("#1e1e1e")
         self.ax.set_facecolor("#1e1e1e")
-
         self.ax.xaxis.label.set_color("white")
         self.ax.yaxis.label.set_color("white")
+        self.ax.title.set_color("white")
         self.ax.tick_params(axis='both', colors='white')
-
         for spine in self.ax.spines.values():
             spine.set_color("white")
-
         self.ax.grid(True, linestyle="--", linewidth=0.4, alpha=0.4)
 
     def loadFiles(self):
@@ -66,6 +64,8 @@ class Graph(QWidget):
 
     def onItemClicked(self,item):
         self.ax.cla()
+        
+        self.stylePlot()
 
         self.selectedFile = os.path.join(self.folder,item.text())
         self.CPPFile = os.path.join(self.CPPFolder,item.text())
@@ -74,14 +74,14 @@ class Graph(QWidget):
 
         df = pandas.read_csv(self.selectedFile)
         
-        for index, row in df.iterrows():
+        for _, row in df.iterrows():
             time = row['time(s)']
             distance = row['distance(cm)']
             self.ax.scatter(time,distance,color='red',s=50)
 
         df = pandas.read_csv(self.CPPFile)
 
-        for index, row in df.iterrows():
+        for _, row in df.iterrows():
             minTime = row['minTime(s)']
             minDist = row['minDistance(cm)']
             maxTime = row['maxTime(s)']
