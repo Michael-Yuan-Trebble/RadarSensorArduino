@@ -4,10 +4,12 @@ import time
 from datetime import datetime
 import os
 import subprocess
+import sys
+import signal
 
 PORT = "COM3"
 BAUD = 9600
-folder = "data"
+folder = os.path.join(os.path.dirname(__file__),"data")
 
 exePath = os.path.join(os.path.dirname(__file__),"analyzer.exe")
 
@@ -16,16 +18,28 @@ os.makedirs(folder,exist_ok=True)
 
 OUTPUTFILE = f'{folder}/distances_{timestamp}.csv'
 
-ser = serial.Serial(PORT,BAUD,timeout=1)
-time.sleep(5)
-ser.reset_input_buffer()
+stop_requested = False
+
+def request_stop(signum, frame):
+    global stop_requested
+    stop_requested = True
+
+signal.signal(signal.SIGBREAK, request_stop)
+signal.signal(signal.SIGINT, request_stop)
+
+try:
+    ser = serial.Serial(PORT,BAUD,timeout=1)
+    time.sleep(5)
+    ser.reset_input_buffer()
+except:
+    raise RuntimeError
 
 with open(OUTPUTFILE, 'w',newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['time(s)','timeDifference(ms)','distance(cm)','angle(degrees)'])
     print(f"Logging started -> {OUTPUTFILE}")
     try:
-        while True:
+        while not stop_requested:
             line = ser.readline().decode('utf-8', errors='ignore').strip()
             if not line or ',' not in line:
                 continue
@@ -33,5 +47,9 @@ with open(OUTPUTFILE, 'w',newline='') as f:
             writer.writerow(data)
             f.flush()
     except KeyboardInterrupt:
-        print("\nLogging stopped.")
-        subprocess.run([exePath, OUTPUTFILE])
+        stop_requested = True
+
+ser.close()
+print("\nLogging stopped.")
+subprocess.run([exePath, OUTPUTFILE])
+sys.exit(0)

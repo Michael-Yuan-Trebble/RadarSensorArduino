@@ -13,10 +13,27 @@ int main(int argc, char* argv[])
     std::string fileName = argv[1];
     std::ifstream file (fileName);
 
+    std::string from = "data";
+    std::string outFileName = fileName;
+    std::string to = "analyzed";
+    size_t pos = outFileName.find(from);
+    if (pos != std::string::npos) 
+    {
+        outFileName.replace(pos, from.length(), to);
+    }
+    
+    std::ofstream outFile (outFileName);
+
     if(!file.is_open())
     {
         std::cerr << "Error: Couldn't open csv";
         return 1;
+    }
+
+    if(!outFile.is_open())
+    {
+        std::cerr << "Failed to create file at: " << outFileName;
+        return 1; 
     }
 
     std::vector<DataPoint> data;
@@ -44,8 +61,6 @@ int main(int argc, char* argv[])
     }
 
     file.close();
-
-    long longestY = 0;
     
     for (const DataPoint& line : data)
     {
@@ -53,25 +68,28 @@ int main(int argc, char* argv[])
         float mx = line.distanceCm * cos(line.angle);
         float my = line.distanceCm * sin(line.angle);
         kf.Update(mx,my);
-        if (line.distanceCm < minDist) 
+
+        float distance = std::sqrt(kf.px*kf.px + kf.py*kf.py);
+
+        if (distance < minDist) 
         {
-            minDist = line.distanceCm;
+            minDist = distance;
             minTime = line.timeMs;
         }
-        else if (line.distanceCm > maxDist) 
+        else if (distance > maxDist) 
         {
-            maxDist = line.distanceCm;
+            maxDist = distance;
             maxTime = line.timeMs;
         }
-        if (kf.py > longestY)
-        {
-            longestY = kf.py;
-        }
     }
+
+    outFile << "minTime(s),minDistance(cm),maxTime(s),maxDistance(cm)\n";
+    outFile << minTime << "," << minDist << "," << maxTime << "," << maxDist;
+
+    outFile.close();
 
     std::cout << "Lines: " << data.size() << std::endl;
     std::cout << "Closest Distance: " << minDist << " at Time: " << minTime << std::endl;
     std::cout << "Furthest Distance: " << maxDist << " at Time: " << maxTime << std::endl;
-    std::cout << "Debug: " << longestY << std::endl;
     return 0;
 }
