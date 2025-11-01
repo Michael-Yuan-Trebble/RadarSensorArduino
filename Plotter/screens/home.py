@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QApplication
 from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 import subprocess
 import os, time
 
 class Home(QWidget):
 
-    createGraphSignal = pyqtSignal()
+    createAnalyzedGraphSignal = pyqtSignal()
+    createDataGraphSignal = pyqtSignal()
 
     def __init__(self, controller):
         super().__init__()
@@ -31,9 +32,17 @@ class Home(QWidget):
         self.stopbtn.setEnabled(False)
         self.mainLayout.addWidget(self.stopbtn)
 
-        self.gotoGraphbtn = QPushButton("Create Graph")
-        self.gotoGraphbtn.clicked.connect(self.emitGraph)
-        self.mainLayout.addWidget(self.gotoGraphbtn)
+        self.gotoAnalyzebtn = QPushButton("Create Analyzed Graph")
+        self.gotoAnalyzebtn.clicked.connect(self.emitAnalyzedGraph)
+        self.mainLayout.addWidget(self.gotoAnalyzebtn)
+
+        self.gotoDatabtn = QPushButton("Create Data Graph")
+        self.gotoDatabtn.clicked.connect(self.emitAnalyzedGraph)
+        self.mainLayout.addWidget(self.gotoDatabtn)
+
+        self.quitbtn = QPushButton("Quit")
+        self.quitbtn.clicked.connect(QApplication.quit)
+        self.mainLayout.addWidget(self.quitbtn)
 
     def startScan(self):
         self.failed = False
@@ -56,7 +65,9 @@ class Home(QWidget):
 
         self.stopbtn.setEnabled(False)
         self.scanbtn.setEnabled(False)
-        self.gotoGraphbtn.setEnabled(False)
+        self.gotoAnalyzebtn.setEnabled(False)
+        self.gotoDatabtn.setEnabled(False)
+        self.quitbtn.setEnabled(False)
 
         while True:
             line = self.process.stdout.readline()
@@ -74,8 +85,21 @@ class Home(QWidget):
                 self.process.kill()
                 self.process = None
                 self.scanbtn.setEnabled(True)
+                self.quitbtn.setEnabled(True)
+                self.gotoAnalyzebtn.setEnabled(True)
+                self.gotoDatabtn.setEnabled(True)
                 return
-        
+            
+    def check_process(self):
+        if self.process.poll() is not None: 
+            self.scanLabel.setText("Scan Completed")
+            self.scanbtn.setEnabled(True)
+            self.gotoAnalyzebtn.setEnabled(True)
+            self.gotoDatabtn.setEnabled(True)
+            self.quitbtn.setEnabled(True)
+            self.process = None
+            self.timer.stop()
+
     def stopScan(self):
         if not self.process:
             return
@@ -85,17 +109,9 @@ class Home(QWidget):
         self.scanLabel.setText("Stopping...")
         self.stopbtn.setEnabled(False)
 
-        def check_process():
-            if self.process.poll() is not None: 
-                self.scanLabel.setText("Scan Completed")
-                self.scanbtn.setEnabled(True)
-                self.gotoGraphbtn.setEnabled(True)
-                self.process = None
-                timer.stop()
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.check_process)
+        self.timer.start(100)
 
-        timer = QTimer(self)
-        timer.timeout.connect(check_process)
-        timer.start(100)
-
-    def emitGraph(self):
-        self.createGraphSignal.emit()
+    def emitAnalyzedGraph(self):
+        self.createAnalyzedGraphSignal.emit()

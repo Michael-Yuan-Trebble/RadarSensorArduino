@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QStackedWidget
 from screens.home import Home
-from screens.graph import Graph
+from screens.analyzedGraph import AnalyzedGraph
+from screens.dataGraph import DataGraph
 
 class NavigationController:
     def __init__(self):
@@ -8,7 +9,8 @@ class NavigationController:
         self.screens = {}
 
         self.home = Home(self)
-        self.home.createGraphSignal.connect(self.goToGraph)
+        self.home.createAnalyzedGraphSignal.connect(self.goToAnalyzedGraph)
+        self.home.createDataGraphSignal.connect(self.goToDataGraph)
 
         self.addScreen("home", self.home)
         self.setCurrent("home") 
@@ -28,12 +30,19 @@ class NavigationController:
         else:
             raise ValueError(f"Screen {name} not found")
         
-    def goToGraph(self):
-        if "graph" not in self.screens:
-            self.graph = Graph(self)
-            self.graph.goBackSignal.connect(self.goBackHome)
-        self.addScreen("graph", self.graph)
-        self.setCurrent("graph")
+    def goToAnalyzedGraph(self):
+        if "analyze" not in self.screens:
+            self.analyze = AnalyzedGraph(self)
+            self.analyze.goBackSignal.connect(self.goBackHome)
+        self.addScreen("analyze", self.analyze)
+        self.setCurrent("analyze")
+
+    def goToDataGraph(self):
+        if "data" not in self.screens:
+            self.data = DataGraph(self)
+            self.data.goBackSignal.connect(self.goBackHome)
+        self.addScreen("data",self.data)
+        self.setCurrent("data")
 
     def goBackHome(self):
         self.setCurrent("home")
