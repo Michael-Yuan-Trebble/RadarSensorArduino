@@ -2,8 +2,8 @@ import serial, csv, time
 import os, sys, subprocess
 from datetime import datetime
 
-PORT = "COM3"
-BAUD = 9600
+PORT = "COM4"
+BAUD = 115200
 folder = os.path.join(os.path.dirname(__file__), "data")
 exePath = os.path.join(os.path.dirname(__file__), "analyzer.exe")
 
